@@ -1,6 +1,9 @@
 import sys
 from pathlib import Path
 
+v2raybot_path = str((Path(__file__).parent.parent).absolute())
+sys.path.append(v2raybot_path)
+
 from peewee import Proxy
 from playhouse.db_url import connect
 from playhouse.sqlite_ext import SqliteExtDatabase
@@ -9,8 +12,6 @@ from vpnbot import appglobals
 from vpnbot.models import *
 from vpnbot.models import User
 
-v2raybot_path = str((Path(__file__).parent.parent).absolute())
-sys.path.append(v2raybot_path)
 
 
 # from playhouse.migrate import PostgresqlMigrator
