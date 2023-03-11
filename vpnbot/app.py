@@ -28,7 +28,11 @@ def unknown(update: Update, context: CallbackContext):
 
 
 updater.dispatcher.add_handler(CommandHandler('start', routing.start))
-# updater.dispatcher.add_handler(CommandHandler('adduser', routing.add_user))
+updater.dispatcher.add_handler(CommandHandler('adduser', routing.add_user))
+updater.dispatcher.add_handler(CommandHandler('getaccounts', routing.get_accounts_info))
+updater.dispatcher.add_handler(CommandHandler('getusers', routing.get_users))
+updater.dispatcher.add_handler(CommandHandler('myaccounts', routing.get_my_accounts_info))
+
 # updater.dispatcher.add_handler(CommandHandler('ban', routing.ban_handler))
 # updater.dispatcher.add_handler(CallbackQueryHandler(button))
 updater.dispatcher.add_handler(CallbackQueryHandler(

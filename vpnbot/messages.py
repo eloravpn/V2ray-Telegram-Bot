@@ -14,3 +14,15 @@ WELCOME_MESSAGE = """
 💬 [ارتباط با ادمین](https://t.me/{})
 
 """
+
+MY_ACCOUNT_MESSAGE = """
+✅Status: {}
+🆔: {}
+
+⏫Up↑: {}
+⏬Down↓: {}
+⭕️Total: {}
+⏰Expiry time:no
+
+Click on the text to copy Subscription Link to clipboard: <code>{}?uuid={}</code>
+"""

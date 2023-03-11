@@ -34,3 +34,12 @@ loop = asyncio.get_event_loop()
 the `pass_job_queue` flag across all handlers would be an even bigger nightmare. 
 At some point this is going to be replaced with `CallbackContext`, but for now we're gonna live with a global. """
 # job_queue: JobQueue = None
+
+# V2ray CONFS
+
+V2RAY_SNI = config('V2RAY_SNI')
+V2RAY_PORT = config('V2RAY_PORT')
+V2RAY_PATH = config('V2RAY_PATH')
+V2RAY_REMARK = config('V2RAY_REMARK')
+
+V2RAY_SUB_URL = config('V2RAY_SUB_URL')

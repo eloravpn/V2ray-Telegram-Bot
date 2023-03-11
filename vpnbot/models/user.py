@@ -3,6 +3,9 @@ from peewee import *
 
 from telegram import User as TelegramUser
 
+from datetime import datetime
+
+
 from vpnbot import util
 from vpnbot.models.basemodel import BaseModel
 
@@ -10,6 +13,8 @@ from vpnbot.models.basemodel import BaseModel
 class User(BaseModel):
     id = PrimaryKeyField()
     chat_id = IntegerField()
+    date_added = DateTimeField(null=False, default=datetime.utcnow())
+
     username = CharField(null=True)
     first_name = CharField(null=True)
     last_name = CharField(null=True)
@@ -23,8 +28,10 @@ class User(BaseModel):
             u.first_name = user.first_name
             u.last_name = user.last_name
             u.username = user.username
+            u.date_added = datetime.utcnow()
         except User.DoesNotExist:
-            u = User(chat_id=user.id, username=user.username, first_name=user.first_name, last_name=user.last_name)
+            u = User(chat_id=user.id, username=user.username,
+                     first_name=user.first_name, last_name=user.last_name)
 
         u.save()
         return u
@@ -32,8 +39,6 @@ class User(BaseModel):
     @staticmethod
     def from_update(update):
         return User.from_telegram_object(update.effective_user)
-
-
 
     def __str__(self):
         text = '👤 '  # emoji
@@ -51,9 +56,11 @@ class User(BaseModel):
     def markdown_short(self):
         displayname = ''
         if self.first_name:
-            displayname = util.escape_markdown(self.first_name.encode('utf-8').decode('utf-8'))
+            displayname = util.escape_markdown(
+                self.first_name.encode('utf-8').decode('utf-8'))
         if self.username:
-            text = '[👤 {}](https://t.me/{})'.format(displayname, util.escape_markdown(self.username))
+            text = '[👤 {}](https://t.me/{})'.format(displayname,
+                                                    self.username)
         else:
             text = displayname
         return text.encode('utf-8').decode('utf-8')
@@ -67,7 +74,6 @@ class User(BaseModel):
             text += " " + self.last_name
         return text.encode('utf-8').decode('utf-8')
 
-
     @staticmethod
     def by_username(username: str):
         if username[0] == '@':
@@ -79,3 +85,14 @@ class User(BaseModel):
             return result[0]
         else:
             raise User.DoesNotExist()
+    @staticmethod
+    def by_chat_id(chat_id: str):
+       
+        result = User.select().where(
+            (User.chat_id == chat_id)
+        )
+        if len(result) > 0:
+            return result[0]
+        else:
+            raise User.DoesNotExist()
+

@@ -1,21 +1,24 @@
 import json
 import traceback
-from datetime import datetime
+import uuid as UUID
+from email.utils import parseaddr
 
 import emoji
-import pytz
+from hurry.filesize import size
 from logzero import logger as log
-from telegram import ForceReply, InlineKeyboardButton, InlineKeyboardMarkup
+from prettytable import PrettyTable
+from telegram import ForceReply, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import ConversationHandler
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.update import Update
 
 from vpnbot import appglobals, captions, messages, util
 from vpnbot.const import CallbackActions
-from vpnbot.models.user import User
+from vpnbot.models import User, Account
+from vpnbot.xui import get_all_client_infos, get_client_infos
 
 
-def callback_router(update: Update, context: CallbackContext) -> None:
+def callback_router(update: Update, context: CallbackContext) -> int:
     obj = json.loads(str(update.callback_query.data))
     user = update.effective_user
 
@@ -27,7 +30,7 @@ def callback_router(update: Update, context: CallbackContext) -> None:
             if action == CallbackActions.REGISTER:
                 register(update=update, context=context)
 
-            log.info('Action: '+str(action))
+            log.info('Action: ' + str(action))
 
     except Exception as e:
         traceback.print_exc()
@@ -35,7 +38,7 @@ def callback_router(update: Update, context: CallbackContext) -> None:
         # get the callback action in plaintext
         actions = dict(CallbackActions.__dict__)
         a = next(k for k, v in actions.items() if v == obj.get("a"))
-        log.error('Action: '+util.escape_markdown(a))
+        log.error('Action: ' + util.escape_markdown(a))
         log.error(e)
 
     finally:
@@ -60,13 +63,12 @@ def ban_handler(update: Update, context: CallbackContext):
 
 
 def register(update: Update, context: CallbackContext):
-
     message = update.callback_query.message
     bot = context.bot
     user = User.from_update(update)
 
-    log.info('You talk with user: '+user.markdown_short)
-    log.debug("Chat ID: {} ". format(user.chat_id))
+    log.info('You talk with user: ' + user.markdown_short)
+    log.debug("Chat ID: {} ".format(user.chat_id))
 
     bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
                     text=messages.REGISTER_ADMIN_ALERT.format(user.markdown_short,
@@ -94,14 +96,98 @@ def start(update: Update, context: CallbackContext):
 
 
 def add_user(update: Update, context: CallbackContext):
-    # try:
-    utc = pytz.UTC
+    only_admin(update.message, update, context)
 
-    uuid = str(context.args[0])
-    telegram_chat_id = int(context.args[1])
-    mail = str(context.args[2])
-    time = datetime.now(utc).strftime("%B %d, %Y %I:%M%p")
+    try:
+        chat_id = int(context.args[0])
+        uuid = str(context.args[1])
+        email = str(context.args[2])
 
-    update.message.reply_text('The Acount is created ' + uuid)
-    # except Error as e:
-    #     update.message.reply_text('An Exception ocourd: ' + str(e))
+        user = User.by_chat_id(chat_id)
+        UUID.UUID(uuid)
+        validate_email_address(email)
+
+        account = Account(user=User.by_chat_id(chat_id), email=email,
+                          uuid=uuid)
+        account.save()
+
+        update.message.reply_text('A new account is created for' + user.markdown_short)
+    except Exception as e:
+        traceback.print_exc()
+        update.message.reply_text('An Exception occurred: ' + str(e))
+
+
+def get_accounts_info(update: Update, context: CallbackContext):
+    only_admin(update.message, update, context)
+
+    bot = context.bot
+
+    x = PrettyTable()
+    client_list = get_all_client_infos()
+    x.field_names = ["Chat ID", "User", "Email", "UP", "Down", "Total"]
+
+    for client in client_list:
+        try:
+            account = Account.by_email(client['email'])
+            user = account.user
+            x.add_row([user.chat_id, user.plaintext, client['email'], size(client['up']),
+                       size(client['down']), size(client['total'])])
+
+        except Account.DoesNotExist:
+            log.error("Account does not exist with email: " + client['email'])
+
+    bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
+                    text=f'<pre>{x}</pre>', parse_mode=ParseMode.HTML,
+                    disable_web_page_preview=True)
+
+
+def get_my_accounts_info(update: Update, context: CallbackContext):
+
+    user = User.from_update(update)
+
+    x = PrettyTable()
+    accounts = Account.select().where(Account.user == user)
+
+    x.field_names = ["Chat ID", "User", "Email", "UP", "Down", "Total"]
+
+    for account in accounts:
+        client_info = get_client_infos(account.email)[0]
+        update.message.reply_text(text=messages.MY_ACCOUNT_MESSAGE.format('Active',
+                                                                          account.uuid,
+                                                                          size(client_info['up']),
+                                                                          size(client_info['down']),
+                                                                          size(client_info['total']),
+                                                                          appglobals.V2RAY_SUB_URL, account.uuid),
+                                  parse_mode='HTML', timeout=60)
+
+
+def get_users(update: Update, context: CallbackContext):
+    only_admin(update.message, update, context)
+
+    bot = context.bot
+
+    x = PrettyTable()
+    x.field_names = ["Chat ID", "User", "User Name", "Date Added"]
+
+    for user in User.select():
+        x.add_row([user.chat_id, user.markdown_short, user.username, user.date_added])
+
+    bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
+                    text=f'<pre>{x}</pre>', parse_mode=ParseMode.HTML,
+                    disable_web_page_preview=True)
+
+
+def only_admin(message, update: Update, context: CallbackContext):
+    if not is_admin(update):
+        message.reply_text(
+            text="This function is restricted to the channel creator.")
+        raise Exception("Try to access admin console!")
+
+
+def is_admin(update: Update):
+    return bool(User.from_update(update).chat_id == int(appglobals.ADMIN_CHAT_ID))
+
+
+def validate_email_address(email_address):
+    if '@' not in parseaddr(email_address)[1]:
+        raise Exception("Email Address is not valid!")

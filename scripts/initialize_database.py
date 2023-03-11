@@ -10,7 +10,7 @@ from playhouse.sqlite_ext import SqliteExtDatabase
 
 from vpnbot import appglobals
 from vpnbot.models import *
-from vpnbot.models import User
+from vpnbot.models import User, Account
 
 
 
@@ -27,10 +27,12 @@ database.initialize(connection)
 # postgresql_migrator = PostgresqlMigrator(database)
 
 create_order = [
-    User
+    User,
+    Account
 ]
 
 delete_order = [
+    Account,
     User,
 ]
 
@@ -53,6 +55,9 @@ def try_create_models():
     for m in create_order:
         m.create_table(safe=True)
     print("Created models if they did not exist yet.")
+    
+def verify_database():
+    try_create_models()
 
 
 if __name__ == "__main__":
@@ -61,6 +66,5 @@ if __name__ == "__main__":
     if "recreate" in sys.argv:
         delete_models()
         try_create_models()
-    if "seed" in sys.argv:
-        print(2)
-        # seed_database()
+    if "verify" in sys.argv:
+        verify_database()
