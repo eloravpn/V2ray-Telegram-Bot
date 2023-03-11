@@ -24,5 +24,7 @@ MY_ACCOUNT_MESSAGE = """
 ⭕️Total: {}
 ⏰Expiry time:no
 
-Click on the text to copy Subscription Link to clipboard: <code>{}?uuid={}</code>
+روی متن زیر کلیک نمایید تا لینک اشتراک پروفایل شما در کلیپ بورد کپی شود: 
+ 
+ <code>{}?uuid={}</code>
 """
