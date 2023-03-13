@@ -22,7 +22,7 @@ MY_ACCOUNT_MESSAGE = """
 ⏫Up↑: {}
 ⏬Down↓: {}
 ⭕️Total: {}
-⏰Expiry time:no
+⏰Expiry time: {}
 
 روی متن زیر کلیک نمایید تا لینک اشتراک پروفایل شما در کلیپ بورد کپی شود: 
  

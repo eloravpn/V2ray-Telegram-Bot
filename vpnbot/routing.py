@@ -124,14 +124,14 @@ def get_accounts_info(update: Update, context: CallbackContext):
 
     x = PrettyTable()
     client_list = get_all_client_infos()
-    x.field_names = ["Chat ID", "User", "Email", "UP", "Down", "Total"]
+    x.field_names = ["Chat ID", "User", "Email", "UP", "Down", "Total", "Expire"]
 
     for client in client_list:
         try:
             account = Account.by_email(client['email'])
             user = account.user
             x.add_row([user.chat_id, user.plaintext, client['email'], size(client['up']),
-                       size(client['down']), size(client['total'])])
+                       size(client['down']), size(client['total']), client['expiry_time']])
 
         except Account.DoesNotExist:
             log.error("Account does not exist with email: " + client['email'])
@@ -142,7 +142,6 @@ def get_accounts_info(update: Update, context: CallbackContext):
 
 
 def get_my_accounts_info(update: Update, context: CallbackContext):
-
     user = User.from_update(update)
 
     x = PrettyTable()
@@ -157,6 +156,7 @@ def get_my_accounts_info(update: Update, context: CallbackContext):
                                                                           size(client_info['up']),
                                                                           size(client_info['down']),
                                                                           size(client_info['total']),
+                                                                          client_info['expiry_time'],
                                                                           appglobals.V2RAY_SUB_URL, account.uuid),
                                   parse_mode='HTML', timeout=60)
 
