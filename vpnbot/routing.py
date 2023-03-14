@@ -172,11 +172,11 @@ def get_users(update: Update, context: CallbackContext):
     bot = context.bot
 
     x = PrettyTable()
-    x.field_names = ["Chat ID", "User", "Accounts", "User Name", "Date Added"]
+    x.field_names = ["Chat ID", "User", "Accounts", "User Name"]
 
     for user in User.select():
         account_count = Account.select().where(Account.user == user).count()
-        x.add_row([user.chat_id, user.markdown_short, account_count, user.username, user.date_added])
+        x.add_row([user.chat_id, user.markdown_short, account_count, user.username])
 
     bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
                     text=f'<pre>{x}</pre>', parse_mode=ParseMode.HTML,
