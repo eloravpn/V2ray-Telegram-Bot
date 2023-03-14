@@ -15,7 +15,7 @@ from telegram.update import Update
 from vpnbot import appglobals, captions, messages, util
 from vpnbot.const import CallbackActions
 from vpnbot.models import User, Account
-from vpnbot.xui import get_all_client_infos, get_client_infos
+from vpnbot.xui import get_all_client_infos, get_client_infos, get_client
 
 
 def callback_router(update: Update, context: CallbackContext) -> int:
@@ -105,13 +105,13 @@ def add_user(update: Update, context: CallbackContext):
 
         user = User.by_chat_id(chat_id)
         UUID.UUID(uuid)
-        validate_email_address(email)
+        # validate_email_address(email)
 
         account = Account(user=User.by_chat_id(chat_id), email=email,
                           uuid=uuid)
         account.save()
 
-        update.message.reply_text('A new account is created for' + user.markdown_short)
+        update.message.reply_text('A new account is created for ' + user.markdown_short)
     except Exception as e:
         traceback.print_exc()
         update.message.reply_text('An Exception occurred: ' + str(e))
@@ -124,16 +124,21 @@ def get_accounts_info(update: Update, context: CallbackContext):
 
     x = PrettyTable()
     client_list = get_all_client_infos()
-    x.field_names = ["Chat ID", "User", "Email", "UP", "Down", "Total", "Expire"]
+    x.field_names = ["Chat ID", "UUID", "User", "Email", "UP", "Down", "Total", "Expire"]
 
     for client in client_list:
         try:
             account = Account.by_email(client['email'])
             user = account.user
-            x.add_row([user.chat_id, user.plaintext, client['email'], size(client['up']),
+            x.add_row([user.chat_id, account.uuid, user.plaintext, client['email'], size(client['up']),
                        size(client['down']), size(client['total']), client['expiry_time']])
 
         except Account.DoesNotExist:
+            inbound_client = get_client(appglobals.V2RAY_INBOUND_ID, client['email'])
+
+            x.add_row(["0", inbound_client['id'], "No User", client['email'],
+                       size(client['up']), size(client['down']), size(client['total']),
+                       client['expiry_time']])
             log.error("Account does not exist with email: " + client['email'])
 
     bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
@@ -167,10 +172,11 @@ def get_users(update: Update, context: CallbackContext):
     bot = context.bot
 
     x = PrettyTable()
-    x.field_names = ["Chat ID", "User", "User Name", "Date Added"]
+    x.field_names = ["Chat ID", "User", "Accounts", "User Name", "Date Added"]
 
     for user in User.select():
-        x.add_row([user.chat_id, user.markdown_short, user.username, user.date_added])
+        account_count = Account.select().where(Account.user == user).count()
+        x.add_row([user.chat_id, user.markdown_short, account_count, user.username, user.date_added])
 
     bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
                     text=f'<pre>{x}</pre>', parse_mode=ParseMode.HTML,
