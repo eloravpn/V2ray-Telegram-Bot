@@ -135,10 +135,10 @@ def get_accounts_info(update: Update, context: CallbackContext):
 
         except Account.DoesNotExist:
             inbound_client = get_client(appglobals.V2RAY_INBOUND_ID, client['email'])
-
-            x.add_row(["0", inbound_client['id'], "No User", client['email'],
-                       size(client['up']), size(client['down']), size(client['total']),
-                       client['expiry_time']])
+            if inbound_client:
+                x.add_row(["0", inbound_client['id'], "No User", client['email'],
+                           size(client['up']), size(client['down']), size(client['total']),
+                           client['expiry_time']])
             log.error("Account does not exist with email: " + client['email'])
 
     bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
