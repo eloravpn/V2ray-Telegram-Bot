@@ -141,6 +141,8 @@ def get_accounts_info(update: Update, context: CallbackContext):
                            client['expiry_time']])
             log.error("Account does not exist with email: " + client['email'])
 
+    log.info(x)
+
     bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
                     text=f'<pre>{x}</pre>', parse_mode=ParseMode.HTML,
                     disable_web_page_preview=True)
@@ -156,6 +158,7 @@ def get_my_accounts_info(update: Update, context: CallbackContext):
 
     for account in accounts:
         client_info = get_client_infos(account.email)[0]
+        log.info(client_info)
         update.message.reply_text(text=messages.MY_ACCOUNT_MESSAGE.format('Active',
                                                                           account.uuid,
                                                                           size(client_info['up']),
@@ -169,14 +172,19 @@ def get_my_accounts_info(update: Update, context: CallbackContext):
 def get_users(update: Update, context: CallbackContext):
     only_admin(update.message, update, context)
 
+    start_index = int(context.args[0])
+    end = int(context.args[1])
+
     bot = context.bot
 
     x = PrettyTable()
     x.field_names = ["Chat ID", "User", "Accounts", "User Name"]
 
-    for user in User.select():
+    for user in User.select().paginate(start_index, end):
         account_count = Account.select().where(Account.user == user).count()
         x.add_row([user.chat_id, user.markdown_short, account_count, user.username])
+
+    log.info(x)
 
     bot.sendMessage(chat_id=appglobals.ADMIN_CHAT_ID,
                     text=f'<pre>{x}</pre>', parse_mode=ParseMode.HTML,
