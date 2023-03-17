@@ -122,26 +122,26 @@ def get_accounts_info(update: Update, context: CallbackContext):
 
     bot = context.bot
 
-    limit = int(context.args[0]) if len(context.args) > 0 else 0
-    offset = int(context.args[1]) if len(context.args) > 1 else 20
+    limit = int(context.args[0]) if len(context.args) > 0 else 30
+    offset = int(context.args[1]) if len(context.args) > 1 else 0
 
     log.info(f"Get Accounts Limit {limit} from {offset}")
 
     x = PrettyTable()
     client_list = get_all_client_infos(limit, offset)
-    x.field_names = ["Chat ID", "UUID", "User", "Email", "UP", "Down", "Total", "Expire"]
+    x.field_names = ["#", "Chat ID", "UUID", "User", "Email", "UP", "Down", "Total", "Expire"]
 
-    for client in client_list:
+    for index, client in enumerate(client_list):
         try:
             account = Account.by_email(client['email'])
             user = account.user
-            x.add_row([user.chat_id, account.uuid, user.plaintext, client['email'], size(client['up']),
+            x.add_row([index+1, user.chat_id, account.uuid, user.plaintext, client['email'], size(client['up']),
                        size(client['down']), size(client['total']), client['expiry_time']])
 
         except Account.DoesNotExist:
             inbound_client = get_client(appglobals.V2RAY_INBOUND_ID, client['email'])
             if inbound_client:
-                x.add_row(["0", inbound_client['id'], "No User", client['email'],
+                x.add_row([index, "0", inbound_client['id'], "No User", client['email'],
                            size(client['up']), size(client['down']), size(client['total']),
                            client['expiry_time']])
             log.error("Account does not exist with email: " + client['email'])
@@ -185,11 +185,11 @@ def get_users(update: Update, context: CallbackContext):
     bot = context.bot
 
     x = PrettyTable()
-    x.field_names = ["Chat ID", "User", "Accounts", "User Name"]
+    x.field_names = ["#", "Chat ID", "User", "Accounts", "User Name"]
 
-    for user in User.select().paginate(page, paginate_by):
+    for index, user in enumerate(User.select().paginate(page, paginate_by)):
         account_count = Account.select().where(Account.user == user).count()
-        x.add_row([user.chat_id, user.markdown_short, account_count, user.username])
+        x.add_row([index+1, user.chat_id, user.markdown_short, account_count, user.username])
 
     log.info(x)
 
