@@ -7,9 +7,10 @@ from vpnbot import appglobals
 import json
 
 
-def get_all_client_infos():
+def get_all_client_infos(limit: int = 20, offset: int = 0):
     conn = sqlite3.connect(appglobals.XUI_DB_PATH)
-    cursor = conn.execute(f"select email,up,down,total,expiry_time from client_traffics")
+    cursor = conn.execute(f"select email,up,down,total,expiry_time from client_traffics " +
+                          f"limit {limit} offset {offset}")
     client_info_list = []
     for c in cursor:
         expire_time = 'Not limited'
@@ -36,7 +37,7 @@ def get_client_infos(email: str):
 
 def get_jalali_date(ms: int):
     return JalaliDateTime.fromtimestamp(ms / 1000,
-                                               pytz.timezone("Asia/Tehran")).strftime("%Y/%m/%d")
+                                        pytz.timezone("Asia/Tehran")).strftime("%Y/%m/%d")
 
 
 def get_client(inbound_id, email):
@@ -54,6 +55,3 @@ def get_client(inbound_id, email):
                 return i
     except StopIteration:
         pass
-
-
-

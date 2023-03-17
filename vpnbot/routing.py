@@ -122,8 +122,13 @@ def get_accounts_info(update: Update, context: CallbackContext):
 
     bot = context.bot
 
+    limit = int(context.args[0]) if len(context.args) > 0 else 0
+    offset = int(context.args[1]) if len(context.args) > 1 else 20
+
+    log.info(f"Get Accounts Limit {limit} from {offset}")
+
     x = PrettyTable()
-    client_list = get_all_client_infos()
+    client_list = get_all_client_infos(limit, offset)
     x.field_names = ["Chat ID", "UUID", "User", "Email", "UP", "Down", "Total", "Expire"]
 
     for client in client_list:
@@ -172,15 +177,17 @@ def get_my_accounts_info(update: Update, context: CallbackContext):
 def get_users(update: Update, context: CallbackContext):
     only_admin(update.message, update, context)
 
-    start_index = int(context.args[0])
-    end = int(context.args[1])
+    page = int(context.args[0]) if len(context.args) > 0 else 0
+    paginate_by = int(context.args[1]) if len(context.args) > 1 else 20
+
+    log.info(f"Get users Page {page} by {paginate_by}")
 
     bot = context.bot
 
     x = PrettyTable()
     x.field_names = ["Chat ID", "User", "Accounts", "User Name"]
 
-    for user in User.select().paginate(start_index, end):
+    for user in User.select().paginate(page, paginate_by):
         account_count = Account.select().where(Account.user == user).count()
         x.add_row([user.chat_id, user.markdown_short, account_count, user.username])
 
