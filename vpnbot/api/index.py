@@ -16,7 +16,7 @@ def index():
     # opening and reading the file
     args = request.args
     num_to_select = args.get("size", default=50, type=int)  # set the number to select here.
-    pt = args.get("pt", default='VMESS', type=str)  # set the protocol type VMESS or VLESS
+    pt = args.get("pt", default='VLESS', type=str)  # set the protocol type VMESS or VLESS
     uuid = args.get("uuid", type=str)
     if uuid is None:
         return Response('', mimetype='text/plain')
