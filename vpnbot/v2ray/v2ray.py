@@ -45,22 +45,18 @@ def get_v2ray_vless_configs(fstring, type, port, uuid, host, path, remark):
         if pattern.search(line) is None:
             continue
         ip = pattern.search(line)[0]
-        prefixTxt = '%s@%s:%s' % (uuid, ip, port)
+        link = generate_vless(host, ip, path, port, remark, type, uuid)
 
-        prefix = 'vless://' + prefixTxt
-        postfixList = []
-
-        # print(urllib.parse.quote(path.encode('utf8')))
-        postfixList.append('path=%s' % urllib.parse.quote(path.encode('utf8')))
-        postfixList.append('security=%s' % 'tls')
-        postfixList.append('encryption=%s' % 'none')
-        postfixList.append('host=%s' % host)
-        postfixList.append('fp=%s' % 'chrome')
-        postfixList.append('type=%s' % type)
-        postfixList.append('sni=%s' % host)
-        # postfixList.append('alpn=%s' % urllib.parse.quote(alpn.encode('utf8')))
-
-        ilink = prefix + '?' + '&'.join(postfixList) + '#' + urllib.parse.quote(remark.encode('utf8'))
-
-        lst.append(ilink)
+        lst.append(link)
     return lst
+
+
+def generate_vless(host, ip, path, port, remark, network_type, uuid):
+    prefix_txt = '%s@%s:%s' % (uuid, ip, port)
+    prefix = 'vless://' + prefix_txt
+    postfix_list = ['path=%s' % urllib.parse.quote(path.encode('utf8')), 'security=%s' % 'tls',
+                    'encryption=%s' % 'none', 'host=%s' % host, 'fp=%s' % 'chrome', 'type=%s' % network_type, 'sni=%s' % host]
+    # print(urllib.parse.quote(path.encode('utf8')))
+    # postfix_list.append('alpn=%s' % urllib.parse.quote(alpn.encode('utf8')))
+    link = prefix + '?' + '&'.join(postfix_list) + '#' + urllib.parse.quote(remark.encode('utf8'))
+    return link
