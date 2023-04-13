@@ -16,7 +16,7 @@ app = Flask(__name__, template_folder='./')
 def index():
     # opening and reading the file
     args = request.args
-    num_to_select = args.get("size", default=32, type=int)  # set the number to select here.
+    num_to_select = args.get("size", default=10, type=int)  # set the number to select here.
     pt = args.get("pt", default='VLESS', type=str)  # set the protocol type VMESS or VLESS
     uuid = args.get("uuid", type=str)
     if uuid is None:
@@ -64,6 +64,8 @@ def get_vless_static(host, path, port, network_type, uuid):
     for row in csvreader:
         if row[2]:
             port = row[2]
+        else:
+            port = appglobals.V2RAY_PORT
         rows.append(generate_vless(host, row[1], path, port, row[0].strip(), network_type, uuid))
 
     return rows
