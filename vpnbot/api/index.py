@@ -62,6 +62,8 @@ def get_vless_static(host, path, port, network_type, uuid):
     csvreader = csv.reader(file)
 
     for row in csvreader:
+        if row[2]:
+            port = row[2]
         rows.append(generate_vless(host, row[1], path, port, row[0].strip(), network_type, uuid))
 
     return rows
