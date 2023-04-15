@@ -26,6 +26,7 @@ def get_all_accounts_usage(day: int = 1):
     n_days_ago = today - datetime.timedelta(days=day)
 
     report = []
+
     accounts_ids = Account.select(Account.id).join(AccountTraffic).where(AccountTraffic.date_added >= n_days_ago).distinct()
 
     for account_id in accounts_ids:
