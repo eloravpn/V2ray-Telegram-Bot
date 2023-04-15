@@ -12,8 +12,6 @@ from vpnbot import appglobals
 from vpnbot.models import *
 from vpnbot.models import User, Account
 
-
-
 # from playhouse.migrate import PostgresqlMigrator
 
 
@@ -28,7 +26,8 @@ database.initialize(connection)
 
 create_order = [
     User,
-    Account
+    Account,
+    AccountTraffic
 ]
 
 delete_order = [
@@ -55,13 +54,13 @@ def try_create_models():
     for m in create_order:
         m.create_table(safe=True)
     print("Created models if they did not exist yet.")
-    
+
+
 def verify_database():
     try_create_models()
 
 
 if __name__ == "__main__":
-    print(v2raybot_path)
 
     if "recreate" in sys.argv:
         delete_models()

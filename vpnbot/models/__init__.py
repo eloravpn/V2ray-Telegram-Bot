@@ -1,14 +1,11 @@
 from vpnbot.models.user import User
 from vpnbot.models.account import Account
-
-
-
+from vpnbot.models.account_traffic import AccountTraffic
 
 if __name__ == "__main__":
-
     User.create_table(fail_silently=True)
     Account.create_table(fail_silently=True)
-
+    AccountTraffic.create_table(fail_silently=False)
 
     # APIAccess.insert({
     #     'user': User.get(User.username == 'Josxa'),

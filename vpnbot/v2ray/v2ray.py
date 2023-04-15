@@ -56,7 +56,6 @@ def generate_vless(host, ip, path, port, remark, network_type, uuid):
     prefix = 'vless://' + prefix_txt
     postfix_list = ['path=%s' % urllib.parse.quote(path.encode('utf8')), 'security=%s' % 'tls',
                     'encryption=%s' % 'none', 'host=%s' % host, 'fp=%s' % 'chrome', 'type=%s' % network_type, 'sni=%s' % host]
-    # print(urllib.parse.quote(path.encode('utf8')))
     # postfix_list.append('alpn=%s' % urllib.parse.quote(alpn.encode('utf8')))
     link = prefix + '?' + '&'.join(postfix_list) + '#' + urllib.parse.quote(remark.encode('utf8'))
     return link
