@@ -213,8 +213,7 @@ def get_top_usage_accounts(update: Update, context: CallbackContext):
             user = account.user
 
             table.add_row([index + offset + 1, user.plaintext,
-                           util.get_readable_size(item['upload']) + '/' + util.get_readable_size(
-                               item['download'])])
+                           util.get_readable_size(item['upload'] + item['download'])])
         except Account.DoesNotExist:
             log.error("Account does not exist with id: " + item['account_id'])
 
