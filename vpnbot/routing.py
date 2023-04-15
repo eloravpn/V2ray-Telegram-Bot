@@ -205,14 +205,14 @@ def get_top_usage_accounts(update: Update, context: CallbackContext):
 
     report_items = get_top_accounts_usage(3, limit)
 
-    table.field_names = ["#", "User", "Usage"]
+    table.field_names = ["User", "Usage"]
 
     for index, item in enumerate(report_items):
         try:
             account = Account.select().where(Account.id == item['account_id']).get()
             user = account.user
 
-            table.add_row([index + offset + 1, user.plaintext,
+            table.add_row([user.plaintext,
                            util.get_readable_size(item['upload'] + item['download'])])
         except Account.DoesNotExist:
             log.error("Account does not exist with id: " + item['account_id'])
