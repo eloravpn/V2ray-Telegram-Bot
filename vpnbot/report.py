@@ -44,6 +44,10 @@ def get_all_accounts_usage(day: int = 1):
             upload = accounts_traffics[0].upload - accounts_traffics[-1].upload
             download = accounts_traffics[0].download - accounts_traffics[-1].download
 
+            if upload < 0 or download < 0:
+                log.error(f"{account.user.markdown_short} Wrong Report Download: {download} Upload: {upload}")
+                continue
+
             usage = {'account_id': account_id,
                      'upload': upload,
                      'download': download,
