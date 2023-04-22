@@ -21,7 +21,7 @@ ENABLE_PROXY = config('ENABLE_PROXY', default=False)
 DATABASE_PATH = config('DATABASE_URL', default='./v2raybot.sqlite3')
 
 XUI_DB_PATH = config('XUI_DB_URL', default='./x-ui.db')
-XUI_TRAFFIC_SYNC_INTERVAL = config('XUI_TRAFFIC_SYNC_INTERVAL', default=600)
+XUI_TRAFFIC_SYNC_INTERVAL = config('XUI_TRAFFIC_SYNC_INTERVAL', default=3600)
 
 _auto_typed_db = SqliteExtDatabase(DATABASE_PATH)
 _auto_typed_db.autorollback = True

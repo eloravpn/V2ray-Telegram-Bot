@@ -16,7 +16,7 @@ from telegram.update import Update
 from vpnbot import appglobals, captions, messages, util, mdformat
 from vpnbot.const import CallbackActions
 from vpnbot.models import User, Account
-from vpnbot.report import get_top_accounts_usage
+from vpnbot.report import get_top_accounts_usage, get_sum_accounts_usage
 from vpnbot.xui import get_all_client_infos, get_client_infos, get_client
 
 
@@ -202,8 +202,9 @@ def get_top_usage_accounts(update: Update, context: CallbackContext):
     limit = 50
 
     table = PrettyTable()
+    table_summary = PrettyTable()
 
-    report_items = get_top_accounts_usage(3, limit)
+    report_items = get_top_accounts_usage(1, limit)
 
     table.field_names = ["User", "Usage"]
 
@@ -217,9 +218,28 @@ def get_top_usage_accounts(update: Update, context: CallbackContext):
         except Account.DoesNotExist:
             log.error("Account does not exist with id: " + item['account_id'])
 
+    table_summary.field_names = ["Days Ago", "Usage", "Average"]
+
+    usage_today = get_sum_accounts_usage(1)
+    usage_2days_ago = get_sum_accounts_usage(2)
+    usage_3days_ago = get_sum_accounts_usage(3)
+    usage_7days_ago = get_sum_accounts_usage(7)
+    usage_30days_ago = get_sum_accounts_usage(30)
+    usage_90days_ago = get_sum_accounts_usage(90)
+
+    table_summary.add_row([1, util.get_readable_size(usage_today), util.get_readable_size(usage_today)])
+    table_summary.add_row([2, util.get_readable_size(usage_2days_ago), util.get_readable_size(usage_2days_ago / 2)])
+    table_summary.add_row([3, util.get_readable_size(usage_3days_ago), util.get_readable_size(usage_3days_ago / 3)])
+    table_summary.add_row([7, util.get_readable_size(usage_7days_ago), util.get_readable_size(usage_7days_ago / 7)])
+    table_summary.add_row([30, util.get_readable_size(usage_30days_ago), util.get_readable_size(usage_30days_ago / 30)])
+    table_summary.add_row([90, util.get_readable_size(usage_90days_ago), util.get_readable_size(usage_90days_ago / 90)])
+
     log.info(table)
+    log.info(table_summary)
 
     send_or_edit_message_to_admin(bot, None, update, table)
+
+    send_or_edit_message_to_admin(bot, None, update, table_summary)
 
 
 def get_accounts_info(update: Update, context: CallbackContext):

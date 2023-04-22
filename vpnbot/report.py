@@ -5,6 +5,7 @@ from logzero import logger as log
 from vpnbot import appglobals
 from vpnbot.models import Account, AccountTraffic
 from vpnbot.xui import get_all_client_infos
+from logzero import logger as log
 
 
 def save_current_accounts_traffic():
@@ -25,13 +26,17 @@ def get_all_accounts_usage(day: int = 1):
     today = datetime.datetime.now()
     n_days_ago = today - datetime.timedelta(days=day)
 
+    log.info('Generate report from ' + str(n_days_ago))
+
     report = []
 
-    accounts_ids = Account.select(Account.id).join(AccountTraffic).where(AccountTraffic.date_added >= n_days_ago).distinct()
+    accounts_ids = Account.select(Account.id).join(AccountTraffic).where(
+        AccountTraffic.date_added >= n_days_ago).distinct()
 
     for account_id in accounts_ids:
         account = Account.select().where(Account.id == account_id).get()
-        accounts_traffics = AccountTraffic.select().where(AccountTraffic.account == account).order_by(
+        accounts_traffics = AccountTraffic.select().where(
+            (AccountTraffic.account == account) & (AccountTraffic.date_added >= n_days_ago)).order_by(
             AccountTraffic.date_added.desc())
 
         if accounts_traffics:
@@ -53,3 +58,8 @@ def get_top_accounts_usage(day: int = 1, top: int = 10):
     top_accounts_usage = get_all_accounts_usage(day)
     top_accounts_usage.sort(reverse=True, key=lambda item: item['upload'] + item['download'])
     return top_accounts_usage[:top]
+
+
+def get_sum_accounts_usage(day: int = 1):
+    top_accounts_usage = get_all_accounts_usage(day)
+    return sum(item['upload'] + item['download'] for item in top_accounts_usage)
