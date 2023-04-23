@@ -202,21 +202,21 @@ def get_top_usage_accounts(update: Update, context: CallbackContext):
         offset = callback_data['page']
     else:
         offset = 0
-    limit = 50
+    limit = 40
 
     table = PrettyTable()
     table_summary = PrettyTable()
 
     report_items = get_top_accounts_usage(1, limit)
 
-    table.field_names = ["User", "Usage"]
+    table.field_names = ["User", "Email", "Usage"]
 
     for index, item in enumerate(report_items):
         try:
             account = Account.select().where(Account.id == item['account_id']).get()
             user = account.user
 
-            table.add_row([user.plaintext_with_id,
+            table.add_row([user.plaintext_with_id, account.email,
                            util.get_readable_size(item['upload'] + item['download'])])
         except Account.DoesNotExist:
             log.error("Account does not exist with id: " + item['account_id'])
