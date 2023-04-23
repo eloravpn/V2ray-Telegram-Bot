@@ -58,18 +58,18 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
     return menu
 
 
-def get_pagination_keyboard(callback_action, offset: int, limit: int):
+def get_pagination_keyboard(callback_action, offset: int, limit: int, params={}):
     keyboard = [
         [InlineKeyboardButton(Emoji.LEFTWARDS_BLACK_ARROW,
                               callback_data=callback_for_action(callback_action,
-                                                                {"page": offset - limit})),
-         InlineKeyboardButton('🔄',
-                              callback_data=callback_for_action(callback_action,
-                                                                {"page": offset})),
-         InlineKeyboardButton(Emoji.BLACK_RIGHTWARDS_ARROW,
-                              callback_data=callback_for_action(callback_action,
-                                                                {"page": offset + limit}))
-         ]
+                                                                dict({"page": offset - limit} | params))),
+    InlineKeyboardButton('🔄',
+                         callback_data=callback_for_action(callback_action,
+                                                           dict({"page": offset} | params))),
+    InlineKeyboardButton(Emoji.BLACK_RIGHTWARDS_ARROW,
+                         callback_data=callback_for_action(callback_action,
+                                                           dict({"page": offset + limit} | params)))
+    ]
     ]
 
     return InlineKeyboardMarkup(keyboard)

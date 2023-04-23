@@ -5,7 +5,6 @@ from telegram import User as TelegramUser
 
 from datetime import datetime
 
-
 from vpnbot import util
 from vpnbot.models.basemodel import BaseModel
 
@@ -73,6 +72,17 @@ class User(BaseModel):
             text += " " + self.last_name
         return text.encode('utf-8').decode('utf-8')
 
+    @property
+    def plaintext_with_id(self):
+        text = '👤 '  # emoji
+        if self.first_name:
+            text += self.first_name
+        if self.last_name:
+            text += " " + self.last_name
+        if self.username:
+            text += " [" + self.username + "]"
+        return text.encode('utf-8').decode('utf-8')
+
     @staticmethod
     def by_username(username: str):
         if username[0] == '@':
@@ -84,9 +94,10 @@ class User(BaseModel):
             return result[0]
         else:
             raise User.DoesNotExist()
+
     @staticmethod
     def by_chat_id(chat_id: str):
-       
+
         result = User.select().where(
             (User.chat_id == chat_id)
         )
@@ -94,4 +105,3 @@ class User(BaseModel):
             return result[0]
         else:
             raise User.DoesNotExist()
-

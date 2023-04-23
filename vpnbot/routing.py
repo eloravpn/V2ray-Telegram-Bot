@@ -110,6 +110,9 @@ def _admin_buttons(send_botlist_button=False, logs_button=False):
          KeyboardButton(captions.ACCOUNT_LIST),
          KeyboardButton(captions.TOP_USAGE_ACCOUNTS)],
         [
+            KeyboardButton(captions.ACCOUNT_DEACTIVATED_LIST)
+        ],
+        [
             KeyboardButton(captions.EXIT)
         ],
     ]
@@ -213,7 +216,7 @@ def get_top_usage_accounts(update: Update, context: CallbackContext):
             account = Account.select().where(Account.id == item['account_id']).get()
             user = account.user
 
-            table.add_row([user.plaintext,
+            table.add_row([user.plaintext_with_id,
                            util.get_readable_size(item['upload'] + item['download'])])
         except Account.DoesNotExist:
             log.error("Account does not exist with id: " + item['account_id'])
@@ -244,21 +247,35 @@ def get_top_usage_accounts(update: Update, context: CallbackContext):
 
 def get_accounts_info(update: Update, context: CallbackContext):
     only_admin(update.message, update, context)
+    get_accounts_info_by_enabled(update, context, True)
 
+
+def get_accounts_deactivated_info(update: Update, context: CallbackContext):
+    only_admin(update.message, update, context)
+
+    get_accounts_info_by_enabled(update, context, enabled=False)
+
+
+def get_accounts_info_by_enabled(update: Update, context: CallbackContext, enabled: bool = True):
     bot = context.bot
-
     callback_data = util.callback_data_from_update(update)
 
     if callback_data:
         offset = callback_data['page']
+        enabled = callback_data['enabled']
     else:
         offset = 0
     limit = 20
 
+    if enabled:
+        order_by = 'id'
+    else:
+        order_by = 'expiry_time'
+
     log.info(f"Get Accounts Limit {limit} from {offset}")
 
     table = PrettyTable()
-    client_list = get_all_client_infos(appglobals.V2RAY_INBOUND_ID, limit, offset)
+    client_list = get_all_client_infos(appglobals.V2RAY_INBOUND_ID, limit, offset, enabled, order_by=order_by)
     table.field_names = ["#", "Chat ID", "UUID", "User", "Email", "Usage", "Expire"]
 
     for index, client in enumerate(client_list):
@@ -281,7 +298,7 @@ def get_accounts_info(update: Update, context: CallbackContext):
 
     log.info(table)
 
-    reply_markup = util.get_pagination_keyboard(CallbackActions.GET_ACCOUNTS, offset, limit)
+    reply_markup = util.get_pagination_keyboard(CallbackActions.GET_ACCOUNTS, offset, limit, {"enabled": enabled})
 
     send_or_edit_message_to_admin(bot, reply_markup, update, table)
 

@@ -7,11 +7,11 @@ from vpnbot import appglobals
 import json
 
 
-def get_all_client_infos(inbound_id: int, limit: int = 20, offset: int = 0, enabled: bool = True):
+def get_all_client_infos(inbound_id: int, limit: int = 20, offset: int = 0, enabled: bool = True, order_by: str = 'id'):
     conn = sqlite3.connect(appglobals.XUI_DB_PATH)
     sql = f"select email,up,down,total,expiry_time from client_traffics "
     sql += f"where enable = {enabled} and inbound_id ={inbound_id} "
-    sql += f"order by id DESC "
+    sql += f"order by {order_by} DESC "
     sql += f"limit {limit} offset {offset}"
 
     cursor = conn.execute(sql)

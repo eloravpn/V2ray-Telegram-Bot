@@ -66,6 +66,8 @@ updater.dispatcher.add_handler(MessageHandler(Filters.text & Filters.regex(capti
                                               routing.get_users))
 updater.dispatcher.add_handler(MessageHandler(Filters.text & Filters.regex(captions.ACCOUNT_LIST),
                                               routing.get_accounts_info))
+updater.dispatcher.add_handler(MessageHandler(Filters.text & Filters.regex(captions.ACCOUNT_DEACTIVATED_LIST),
+                                              routing.get_accounts_deactivated_info))
 updater.dispatcher.add_handler(MessageHandler(Filters.text & Filters.regex(captions.TOP_USAGE_ACCOUNTS),
                                               routing.get_top_usage_accounts))
 
